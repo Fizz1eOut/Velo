@@ -1,0 +1,92 @@
+:root {
+  --bg-base: #0C0C12;
+  --bg-surface: #14141E;
+  --bg-surface-2: #1C1C28;
+  --bg-surface-3: #252535;
+
+  --primary-subtle: #1A1830;
+  --primary-muted: #252345;
+  --primary: #7C74FF;
+  --primary-hover: #6C63FF;
+  --primary-pressed: #574FD6;
+
+  --text-primary: #E8E8F2;
+  --text-secondary: #9CA3AF;
+  --text-muted: #5E6278;
+  --text-disabled: #3A3A50;
+
+  --border: #252535;
+  --border-focus: #7C74FF;
+
+  --input-bg: #1C1C28;
+  --scrollbar: #2E2E42;
+  --overlay: rgba(0, 0, 0, 0.70);
+  --header-bg: rgba(20, 20, 30, 0.85);
+
+  --bubble-sent-bg: #7C74FF;
+  --bubble-sent-text: #FFFFFF;
+  --bubble-sent-meta: rgba(255, 255, 255, 0.55);
+  --bubble-recv-bg: #1C1C28;
+  --bubble-recv-text: #E8E8F2;
+  --bubble-recv-meta: #6B7280;
+  --bubble-recv-border: rgba(255, 255, 255, 0.05);
+
+  --reaction-bg: #1C1C28;
+  --reaction-hover: #252345;
+
+  --reply-bg: #1A1830;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.20);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.30);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.40);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.50);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.60);
+  --shadow-glow: 0 0 0 3px rgba(124, 116, 255, 0.25);
+}
+
+.light {
+  --bg-base: #EEEEF3;
+  --bg-surface: #FFFFFF;
+  --bg-surface-2: #F5F5F8;
+  --bg-surface-3: #EBEBF0;
+
+  --primary-subtle: #F0EFFE;
+  --primary-muted: #E0DEFD;
+  --primary: #6C63FF;
+  --primary-hover: #574FD6;
+  --primary-pressed: #4840B3;
+
+  --text-primary: #1C1C28;
+  --text-secondary: #5E6278;
+  --text-muted: #9CA3AF;
+  --text-disabled: #C4C4CF;
+
+  --border: #E4E4EB;
+  --border-focus: #6C63FF;
+
+  --input-bg: #FFFFFF;
+  --scrollbar: #D1D1DB;
+  --overlay: rgba(0, 0, 0, 0.45);
+  --header-bg: rgba(255, 255, 255, 0.85);
+
+  --offline: #D1D1DB;
+
+  --bubble-sent-bg: #6C63FF;
+  --bubble-sent-meta: rgba(255, 255, 255, 0.65);
+  --bubble-recv-bg: #FFFFFF;
+  --bubble-recv-text: #1C1C28;
+  --bubble-recv-meta: #9CA3AF;
+  --bubble-recv-border: rgba(0, 0, 0, 0.06);
+
+  --reaction-bg: #F0F0F6;
+  --reaction-hover: #E4E3FF;
+
+  --reply-bg: #F0EFFE;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-glow: 0 0 0 3px rgba(108, 99, 255, 0.20);
+}
