@@ -1,0 +1,53 @@
+:root {
+  --ff-base: "Geist", sans-serif;
+  --ff-display: "Syne", sans-serif;
+
+  --primary-soft: #9189FF;
+  --primary-fg: #FFFFFF;
+
+  --online:#22C55E;
+  --away: #F59E0B;
+  --offline: #3A3A50;
+
+  --success: #22C55E;
+  --error:#EF4444;
+  --warning: #F59E0B;
+  --badge: #EF4444;
+
+  --fs-xs: 12px;
+  --fs-sm: 14px;
+  --fs-md: 16px;
+  --fs-lg: 18px;
+  --fs-xl: 20px;
+  --fs-2xl: 24px;
+  --fs-3xl: 30px;
+
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 40px;
+
+  --gap-xs: 4px;
+  --gap-sm: 8px;
+  --gap-md: 16px;
+  --gap-lg: 24px;
+  --gap-xl: 32px;
+
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 50%;
+
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.20s ease;
+  --transition-slow: 0.30s ease;
+  --transition-spring: 0.30s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-smooth: 0.30s cubic-bezier(0.40, 0.00, 0.20, 1);
+}
