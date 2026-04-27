@@ -1,12 +1,11 @@
 import { fileURLToPath } from 'node:url';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import { defineVitestProject } from '@nuxt/test-utils/config';
 import vue from '@vitejs/plugin-vue';
 import { resolve } from 'path';
 import AutoImport from 'unplugin-auto-import/vite';
 
 export default defineConfig({
-  base: '/CryptoCore/',
   plugins: [vue()],
   test: {
     globals: true,
