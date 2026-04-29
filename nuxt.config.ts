@@ -1,4 +1,10 @@
 export default defineNuxtConfig({
+   imports: {
+    autoImport: false
+  },
+  components: {
+    dirs: []
+  },
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   modules: ['@nuxt/eslint', '@nuxt/test-utils/module', '@pinia/nuxt'],
