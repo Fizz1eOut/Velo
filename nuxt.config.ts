@@ -18,7 +18,7 @@ export default defineNuxtConfig({
     head: {
       charset: 'utf-8',
       viewport: 'width=device-width, initial-scale=1.0',
-      title: 'CryptoCore',
+      title: 'Velo',
       link: [
         { rel: 'icon', href: `${process.env.NUXT_APP_BASE_URL || '/'}favicon.ico` },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
