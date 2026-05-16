@@ -68,8 +68,8 @@
       content: '';
       position: absolute;
       bottom: -1px;
-      left: -5%;
-      width: 110%;
+      left: 0;
+      width: 100%;
       height: 40px;
       background: #ffffff;
       border-radius: 50% 50% 0 0 / 60px 60px 0 0;
