@@ -6,6 +6,7 @@
   import AppButton from '~/components/base/AppButton.vue';
   import AppIcon from '~/components/base/AppIcon.vue';
   import AuthIntro from '~/components/content/Auth/AuthIntro.vue';
+  import { useAuthStore } from '~/stores/authStore';
   import type { SignUpFormValues } from '~/interface/auth.interface';
   import { useForm, useField } from 'vee-validate';
   import * as yup from 'yup';
@@ -66,17 +67,11 @@
     !!acceptTermsError.value
   );
 
-  const onSubmit = handleSubmit(async (values: SignUpFormValues) => {
-    signupError.value = null;
-    loading.value = true;
+  const authStore = useAuthStore();
 
-    try {
-      console.log('Form values:', values);
-    } catch (err: unknown) {
-      signupError.value = err instanceof Error ? err.message : 'Unknown error';
-    } finally {
-      loading.value = false;
-    }
+  const onSubmit = handleSubmit(async (values) => {
+    const result = await authStore.signUp(values.email, values.password, values.name, values.username);
+    if (!result.success) signupError.value = result.error ?? 'Registration error';
   });
 
   const showPassword  = ref(false);

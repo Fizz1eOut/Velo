@@ -5,6 +5,7 @@
   import AppButton from '~/components/base/AppButton.vue';
   import AppIcon from '~/components/base/AppIcon.vue';
   import AuthIntro from '~/components/content/Auth/AuthIntro.vue';
+  import { useAuthStore } from '~/stores/authStore';
   import type { LoginFormValues } from '~/interface/auth.interface';
   import { useForm, useField } from 'vee-validate';
   import * as yup from 'yup';
@@ -38,17 +39,10 @@
 
   const hasError = computed(() => !!emailError.value || !!passwordError.value);
 
-  const onSubmit = handleSubmit(async (values: LoginFormValues) => {
-    loginError.value = null;
-    loading.value = true;
-
-    try {
-      console.log('Form values:', values);
-    } catch (err: unknown) {
-      loginError.value = err instanceof Error ? err.message : 'Unknown error';
-    } finally {
-      loading.value = false;
-    }
+  const authStore = useAuthStore();
+  const onSubmit = handleSubmit(async (values) => {
+    const result = await authStore.signIn(values.email, values.password);
+    if (!result.success) loginError.value = result.error ?? 'Login error';
   });
 
   const showPassword  = ref(false);
