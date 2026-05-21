@@ -1,5 +1,5 @@
 export default defineNuxtConfig({
-   imports: {
+  imports: {
     autoImport: false
   },
   components: {
@@ -7,7 +7,15 @@ export default defineNuxtConfig({
   },
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  modules: ['@nuxt/eslint', '@nuxt/test-utils/module', '@pinia/nuxt'],
+  modules: [
+    '@nuxt/eslint', 
+    '@nuxt/test-utils/module', 
+    '@pinia/nuxt',
+    '@nuxtjs/supabase',
+  ],
+  supabase: {
+    redirect: false,
+  },
   css: [
     '~/assets/styles/tokens.css',
     '~/assets/styles/theme.css',

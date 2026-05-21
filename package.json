@@ -11,15 +11,21 @@
   },
   "dependencies": {
     "@nuxt/eslint": "^1.15.2",
+    "@nuxtjs/supabase": "^2.0.8",
     "@pinia/nuxt": "^0.11.3",
+    "@supabase/supabase-js": "^2.105.4",
     "nuxt": "^4.4.2",
+    "pinia": "^3.0.4",
+    "vee-validate": "^4.15.1",
     "vue": "^3.5.32",
-    "vue-router": "^5.0.4"
+    "vue-router": "^5.0.4",
+    "yup": "^1.7.1"
   },
   "devDependencies": {
     "@nuxt/test-utils": "^4.0.2",
     "@pinia/testing": "^1.0.3",
     "@vitest/coverage-istanbul": "^4.1.5",
+    "@vitest/eslint-plugin": "^1.6.17",
     "@vue/test-utils": "^2.4.8",
     "happy-dom": "^20.9.0",
     "unplugin-auto-import": "^21.0.0",
