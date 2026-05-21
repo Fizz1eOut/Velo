@@ -5,7 +5,7 @@
   interface AuthFormProps {
     title: string;
     subtitle: string;
-    pageTitle: string;
+    pageTitle?: string;
   }
   defineProps<AuthFormProps>();
 </script>
