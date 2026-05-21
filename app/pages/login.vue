@@ -50,6 +50,7 @@
           />
           <auth-forgot-password
             v-else-if="currentView === 'forgot'"
+            :page-title="titles[currentView]"
             @signin="currentView = 'signin'"
           />
         </app-container>
