@@ -13,7 +13,7 @@ export const useAuthStore = defineStore('auth', () => {
   const signIn = async (email: string, password: string) => {
     const { error } = await apiSignIn(email, password);
     if (error) return { success: false, error: error.message };
-    await navigateTo('/');
+
     return { success: true };
   };
 
