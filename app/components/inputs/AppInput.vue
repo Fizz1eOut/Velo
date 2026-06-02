@@ -82,7 +82,6 @@
     transform: translateY(-50%);
     display: flex;
     align-items: center;
-    pointer-events: none;
   }
   .has-icon-before .input {
     padding: 0 16px 0 30px;
@@ -97,7 +96,6 @@
     transform: translateY(-50%);
     display: flex;
     align-items: center;
-    pointer-events: none;
   }
 
   ::-webkit-input-placeholder {
