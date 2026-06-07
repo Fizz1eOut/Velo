@@ -11,6 +11,16 @@
   const query = ref('');
   const results = ref<Profile[]>([]);
   const isLoading = ref(false);
+  const inputRef = ref<InstanceType<typeof AppInput> | null>(null);
+
+  const focus = () => {
+    inputRef.value?.focus();
+  };
+  defineExpose({ focus });
+
+  const emit = defineEmits<{
+    userId: [userId: string]
+  }>();
 
   const isEmpty = computed(
     () => query.value.trim().length > 0 && !isLoading.value && results.value.length === 0
@@ -41,15 +51,18 @@
     results.value = [];
   };
 
-  const selectUser = (user: Profile) => {
-    console.log('selected user:', user);
+  const selectUser = async (user: Profile) => {
     close();
+    console.log(user.id);
+    
+    emit('userId', user.id);
   };
 </script>
 
 <template>
   <div class="search" @click.stop>
     <app-input
+      ref="inputRef"
       :model-value="query"
       type="text"
       placeholder="Search by name or username..."
