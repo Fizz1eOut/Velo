@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { computed, useSlots } from 'vue';
+  import { ref, computed, useSlots } from 'vue';
 
   interface SearchInputProps {
     modelValue: string | number;
@@ -13,6 +13,12 @@
   const emit = defineEmits(['update:modelValue']);
 
   const slots = useSlots();
+
+  const inputRef = ref<HTMLInputElement | null>(null);
+
+  defineExpose({
+    focus: () => inputRef.value?.focus()
+  });
 
   const hasIconBefore = computed(() => !!slots['icon-before']?.());
   const hasIconAfter = computed(() => !!slots['icon-after']?.());
@@ -40,6 +46,7 @@
     </div>
 
     <input
+      ref="inputRef"
       v-model="inputValue"
       :type="type || 'text'"
       class="input"
