@@ -36,3 +36,12 @@ export interface GroupChat extends Chat {
   type: 'group';
   name: string;
 }
+
+export interface ChatListItem {
+  chat: {
+    id: string;
+    type: 'direct' | 'group';
+    updated_at: string;
+  };
+  profile: Profile;
+}
