@@ -6,6 +6,7 @@ export interface Message {
   type: 'text' | 'image' | 'file' | 'audio';
   is_edited: boolean;
   is_deleted: boolean;
+  is_read: boolean;
   created_at: string;
   updated_at: string;
 }

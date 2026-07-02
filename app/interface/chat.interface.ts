@@ -42,6 +42,7 @@ export interface ChatListItem {
     id: string;
     type: 'direct' | 'group';
     updated_at: string;
+    unread_count: number;
   };
   profile: Profile;
 }
