@@ -17,11 +17,14 @@
       <div v-if="message.is_deleted" class="chat-message__deleted">
         Message deleted
       </div>
+
       <div v-else class="chat-message__content">{{ message.content }}</div>
 
       <div class="chat-message__time">
         {{ formatTime(message.created_at) }}
-        <div v-if="isOwn" class="chat-message__check">✓</div>
+        <div v-if="isOwn" :class="{ 'is-read': message.is_read }" class="chat-message__check">
+          {{ message.is_read ? '✓✓' : '✓' }}
+        </div>
       </div>
     </div>
   </div>
@@ -75,7 +78,9 @@
   .chat-message__check {
     font-size: var(--fs-xs);
   }
-  
+  .chat-message__check.is-read {
+    color: var(--primary-pressed);
+  }
   @media (max-width: 768px) {
     .chat-message__content {
       font-size: var(--fs-md);

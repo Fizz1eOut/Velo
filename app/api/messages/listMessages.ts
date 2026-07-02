@@ -10,20 +10,24 @@ export const listMessages = async (
   const { data, error } = await supabase
     .from('messages')
     .select(`
-    id,
-    chat_id,
-    sender_id,
-    content,
-    type,
-    is_edited,
-    is_deleted,
-    created_at,
-    updated_at
-  `)
+      id,
+      chat_id,
+      sender_id,
+      content,
+      type,
+      is_edited,
+      is_deleted,
+      created_at,
+      updated_at,
+      message_reads!left(user_id)
+    `)
     .eq('chat_id', chatId)
     .order('created_at', { ascending: true });
 
-console.log('listMessages error:', JSON.stringify(error));
+  const messages = data?.map((msg) => ({
+    ...msg,
+    is_read: msg.message_reads.some((r) => r.user_id !== msg.sender_id),
+  })) ?? null;
 
-return { data: data as Message[] | null, error };
+  return { data: messages as Message[] | null, error };
 };

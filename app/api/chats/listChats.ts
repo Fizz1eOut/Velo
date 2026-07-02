@@ -8,23 +8,30 @@ export const listChats = async (): Promise<{ data: ChatListItem[] | null; error:
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { data: null, error: new Error('Not authenticated') };
 
-  const { data: memberChats } = await supabase
-    .from('chat_members')
-    .select('chat_id')
+  const { data, error } = await supabase
+    .from('chat_list_view')
+    .select('chat_id, type, updated_at, unread_count, user_id, name, avatar_url')
     .eq('user_id', user.id);
 
-  if (!memberChats?.length) return { data: [], error: null };
+  if (!data?.length) return { data: [], error };
 
-  const chatIds = memberChats.map(m => m.chat_id);
+  const chatIds = data.map(d => d.chat_id!);
 
-  const { data, error } = await supabase
+  const { data: members } = await supabase
     .from('chat_members')
-    .select(`
-      chat:chats(id, type, updated_at),
-      profile:profiles(id, full_name, username, avatar_url, status)
-    `)
+    .select('chat_id, profile:profiles(id, full_name, username, avatar_url, status)')
     .in('chat_id', chatIds)
     .neq('user_id', user.id);
 
-  return { data: data as unknown as ChatListItem[] | null, error };
+  const result: ChatListItem[] = data.map((row) => ({
+    chat: {
+      id: row.chat_id!,
+      type: row.type as 'direct' | 'group',
+      updated_at: row.updated_at ?? '',
+      unread_count: row.unread_count ?? 0,
+    },
+    profile: members?.find(m => m.chat_id === row.chat_id)?.profile as ChatListItem['profile'],
+  }));
+
+  return { data: result, error };
 };
