@@ -25,6 +25,9 @@
       </div>
       <div class="conversation-item__time">
         {{ formatMessageDate(getLastMessage(item.chat.id)?.created_at || '') }}
+        <div v-if="item.chat.unread_count > 0" class="conversation-item__badge">
+          {{ item.chat.unread_count }}
+        </div>
       </div>
     </div>
   </div>
@@ -56,5 +59,16 @@
   .conversation-item__time {
     font-size: var(--fs-xs);
     color: var(--text-secondary);
+  }
+  .conversation-item__badge {
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 20px;
+    border-radius: var(--radius-full);
+    background-color: var(--badge);
+    color: #ffffff;
+    font-size: var(--fs-sm);
   }
 </style>
