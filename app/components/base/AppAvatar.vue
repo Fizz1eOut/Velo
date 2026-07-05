@@ -3,9 +3,11 @@
     src: string | null
     alt?: string
     size?: 'sm' | 'md' | 'lg'
+    status?: 'online' | 'offline' | 'dnd' | null;
   }>(), {
     alt: 'User avatar',
-    size: 'md'
+    size: 'md',
+    status: null
   });
 </script>
 
@@ -25,14 +27,25 @@
         <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" fill="#9CA3AF"/>
       </svg>
     </div>
+    <span
+      v-if="status"
+      class="avatar__status"
+      :class="`avatar__status--${status}`"
+    />
   </div>
 </template>
 
 <style scoped>
   .avatar {
+    position: relative;
     border-radius: 50%;
-    overflow: hidden;
     flex-shrink: 0;
+  }
+  .avatar__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
   }
   .avatar--sm {
     width: 32px;
@@ -58,9 +71,28 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 50%;
   }
   .avatar__placeholder svg {
     width: 65%;
     height: 65%;
   }
+  .avatar__status {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-surface);
+  }
+  .avatar__status--online  { 
+    background-color: var(--online);
+   }
+  .avatar__status--offline { 
+    background-color: var(--offline);
+   }
+  .avatar__status--dnd { 
+    background-color: var(--badge) 
+    }
 </style>

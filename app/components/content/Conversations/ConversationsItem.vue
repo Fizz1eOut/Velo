@@ -13,7 +13,11 @@
 
 <template>
   <div class="conversations-item">
-    <app-avatar :src="item.profile.avatar_url" :alt="item.profile.username" />
+    <app-avatar 
+      :src="item.profile.avatar_url" 
+      :alt="item.profile.username"
+      :status="item.profile.status"
+    />
     <div class="conversation-item__info">
       <div class="conversation-item__content">
         <div class="conversation-item__name">
