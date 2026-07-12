@@ -45,6 +45,21 @@
       .subscribe();
   };
 
+  const subscribeToStatus = () => {
+    return supabase
+      .channel('profiles-status')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles' },
+        (payload) => {
+          const { id, status } = payload.new as { id: string; status: 'online' | 'offline' | 'dnd' };
+          const chat = chats.value.find(c => c.profile.id === id);
+          if (chat) chat.profile.status = status;
+        }
+      )
+      .subscribe();
+  };
+
   onMounted(async () => {
     const { data } = await listChats();
     chats.value = data ?? [];
@@ -56,6 +71,7 @@
     }
 
     subscribeToLastMessages();
+    subscribeToStatus();
   });
 
   onUnmounted(() => {
