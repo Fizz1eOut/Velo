@@ -19,7 +19,7 @@ export const listChats = async (): Promise<{ data: ChatListItem[] | null; error:
 
   const { data: members } = await supabase
     .from('chat_members')
-    .select('chat_id, profile:profiles(id, full_name, username, avatar_url, status)')
+    .select('chat_id, profile:profiles(id, full_name, username, avatar_url, status, last_seen)')
     .in('chat_id', chatIds)
     .neq('user_id', user.id);
 

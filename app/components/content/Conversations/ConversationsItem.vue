@@ -2,6 +2,7 @@
   import type { ChatListItem } from '~/interface/chat.interface';
   import type { lastMessagePreview } from '~/api/messages/lastMessages';
   import { formatMessageDate } from '~/utils/formatMessageDate';
+  import { isOnline } from '~/utils/isOnline';
   import AppAvatar from '~/components/base/AppAvatar.vue';
 
   interface ConversationsItemProps {
@@ -16,7 +17,7 @@
     <app-avatar 
       :src="item.profile.avatar_url" 
       :alt="item.profile.username"
-      :status="item.profile.status"
+      :status="isOnline(item.profile.last_seen, item.profile.status) ? 'online' : 'offline'"
     />
     <div class="conversation-item__info">
       <div class="conversation-item__content">
