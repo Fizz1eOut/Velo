@@ -118,6 +118,26 @@
 </template>
 
 <style scoped>
+  .chat-messages {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 5px;
+  }
+  .chat-messages::-webkit-scrollbar {
+    width: 6px;
+  }
+  .chat-messages::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .chat-messages::-webkit-scrollbar-thumb {
+    background: var(--scrollbar);
+    border-radius: 3px;
+    transition: background var(--transition-base);
+  }
+  .chat-messages::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.35);
+  }
  .chat-messages__divider {
     display: flex;
     align-items: center;
@@ -132,5 +152,10 @@
     flex: 1;
     height: 1px;
     background-color: var(--border);
+  }
+  @media (max-width: 480px) {
+    .chat-messages {
+      padding-left: 12px;
+    }
   }
 </style>
