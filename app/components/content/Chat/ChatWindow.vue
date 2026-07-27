@@ -4,6 +4,7 @@
   import AppLoadingSpinner from '~/components/base/AppLoadingSpinner.vue';
   import ChatMessages from '~/components/content/Chat/ChatMessages.vue';
   import ChatInput from '~/components/content/Chat/ChatInput.vue';
+  import ChatHeader from '~/components/content/Chat/ChatHeader.vue';
 
   interface ChatWindow {
     userId: string;
@@ -41,8 +42,8 @@
     <app-loading-spinner v-if="isLoading" />
     <div v-else-if="error">{{ error }}</div>
 
-    <div v-else-if="chatId">
-      <p>Chat ID: {{ chatId }}</p>
+    <div v-else-if="chatId" class="chat-window__content">
+      <chat-header :chat-id="chatId" />
       <chat-messages :chat-id="chatId" />
       <chat-input :chat-id="chatId" />
     </div>
@@ -55,5 +56,17 @@
 </template>
 
 <style scoped> 
-
+  .chat-window {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .chat-window__content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
 </style>
