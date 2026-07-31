@@ -1,5 +1,6 @@
 <script setup lang="ts">
-  import { ref, watch, nextTick, onUnmounted, computed } from 'vue';
+  import { ref, watch, nextTick, onUnmounted, computed, inject } from 'vue';
+  import { chatSearchKey } from '~/composables/useChatSearch';
   import { listMessages } from '~/api/messages/listMessages';
   import { markMessagesAsRead } from '~/api/messages/markMessagesAsRead';
   import { useSupabaseClient } from '#imports';
@@ -16,11 +17,13 @@
   const isLoading = ref(false);
   const bottomRef = ref<HTMLDivElement | null>(null);
   const currentUserId = ref<string | null>(null);
-
   const supabase = useSupabaseClient<Database>();
 
+  const search = inject(chatSearchKey);
+  if (!search) throw new Error('ChatMessages must be used within a ChatWindow');
+
   const firstUnreadIndex = computed(() =>
-    messages.value.findIndex(
+    messages.value.findIndex( 
       (m) => !m.is_read && m.sender_id !== currentUserId.value
     )
   );
@@ -30,11 +33,23 @@
     bottomRef.value?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const scrollToMessage = async (messageId: string) => {
+    await nextTick();
+    document
+      .getElementById(`msg-${messageId}`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  watch(search.scrollToken, () => {
+    if (search.activeMatch.value) scrollToMessage(search.activeMatch.value.id);
+  });
+
   const loadMessages = async (chatId: string) => {
     isLoading.value = true;
     await markMessagesAsRead(chatId);
     const { data } = await listMessages(chatId);
     messages.value = data ?? [];
+    search.setMessages(messages.value);
     isLoading.value = false;
     scrollToBottom();
   };
@@ -54,6 +69,7 @@
         },
         (payload) => {
           messages.value.push(payload.new as Message);
+          search.setMessages(messages.value);
           scrollToBottom();
         }
       )
@@ -107,8 +123,10 @@
         </div>
 
         <chat-message
+          :id="`msg-${message.id}`"
           :message="message"
           :is-own="message.sender_id === currentUserId"
+          :highlight-query="search.query.value"
         />
       </template>
     </template>

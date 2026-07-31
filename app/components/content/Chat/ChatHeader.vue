@@ -57,6 +57,9 @@
 </template>
 
 <style scoped>
+  .chat-header {
+    position: relative;
+  }
   .chat-header__body {
     display: flex;
     justify-content: space-between;

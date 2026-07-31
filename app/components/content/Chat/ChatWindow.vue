@@ -1,6 +1,7 @@
 <script setup lang="ts">
-  import { ref, watch } from 'vue';
+  import { ref, watch, provide } from 'vue';
   import { fetchChatById } from '~/api/chats/chatById';
+  import { chatSearchKey, createChatSearch } from '~/composables/useChatSearch';
   import AppLoadingSpinner from '~/components/base/AppLoadingSpinner.vue';
   import ChatMessages from '~/components/content/Chat/ChatMessages.vue';
   import ChatInput from '~/components/content/Chat/ChatInput.vue';
@@ -14,6 +15,9 @@
   const chatId = ref<string | null>(null);
   const isLoading = ref(false);
   const error = ref<string | null>(null);
+
+  const search = createChatSearch();
+  provide(chatSearchKey, search);
 
   watch(
     () => props.userId,

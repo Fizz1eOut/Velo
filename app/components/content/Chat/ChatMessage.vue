@@ -1,11 +1,23 @@
 <script setup lang="ts">
+  import { computed } from 'vue';
   import type { Message } from '~/interface/message.interface';
 
   interface ChatMessage {
     message: Message;
     isOwn: boolean;
+    highlightQuery?: string;
   }
-  defineProps<ChatMessage>();
+  const props = defineProps<ChatMessage>();
+
+  const highlightedText = computed(() => {
+    const text = props.message.content ?? '';
+    const q = props.highlightQuery?.trim();
+    if (!q) return text;
+
+    const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(${escaped})`, 'gi');
+    return text.replace(regex, '<mark>$1</mark>');
+  });
 
   const formatTime = (date: string) =>
     new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -17,8 +29,7 @@
       <div v-if="message.is_deleted" class="chat-message__deleted">
         Message deleted
       </div>
-
-      <div v-else class="chat-message__content">{{ message.content }}</div>
+      <div v-else class="chat-message__content" v-html="highlightedText"/>
 
       <div class="chat-message__time">
         {{ formatTime(message.created_at) }}
@@ -62,6 +73,12 @@
     color: var(--text-primary);
     word-break: break-word;
     white-space: pre-wrap;
+  }
+  .chat-message__content :deep(mark) {
+    background-color: var(--away);
+    color: #ffffff;
+    border-radius: 2px;
+    padding: 0 2px;
   }
   .chat-message__deleted {
     font-size: var(--fs-sm);
