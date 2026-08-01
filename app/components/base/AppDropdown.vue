@@ -1,16 +1,26 @@
 <script setup lang="ts">
+  import { ref } from 'vue';
   import AppUnderlay from '@/components/base/AppUnderlay.vue';
   import AppContainer from '@/components/base/AppContainer.vue';
+  import { useClickOutside } from '@/composables/useClickOutside';
 
   interface dropdownProps {
     active?: boolean;
   }
   defineProps<dropdownProps>();
+
+  const emit = defineEmits<{
+    (e: 'close'): void;
+  }>();
+
+  const rootEl = ref<HTMLElement | null>(null);
+
+  useClickOutside(rootEl, () => emit('close'));
 </script>
 
 <template>
   <Transition>
-    <div v-if="active" class="dropdown">
+    <div v-if="active" ref="rootEl" class="dropdown">
       <app-underlay>
         <app-container>
           <ul class="dropdown-list">
@@ -43,7 +53,7 @@
   border-radius: var(--radius-sm);
   width: 100%;
 }
-.dropdown-list> *:not(:last-child) {
+.dropdown-list > *:not(:last-child) {
   margin-bottom: 10px;
 }
 </style>
