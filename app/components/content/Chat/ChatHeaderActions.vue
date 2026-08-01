@@ -1,9 +1,12 @@
 <script setup lang="ts">
   import AppIcon from '~/components/base/AppIcon.vue';
   import ChatSearch from '~/components/content/Chat/ChatSearch.vue';
-  // import ChatOptionsMenu from '~/components/content/Chat/ChatOptionsMenu.vue';
+  import ChatOptionsMenu from '~/components/content/Chat/ChatOptionsMenu.vue';
 
-
+  interface ChatHeaderActions {
+    chatId: string;
+  }
+  defineProps<ChatHeaderActions>();
 </script>
 
 <template>
@@ -33,14 +36,7 @@
     </div>
 
     <div class="chat-header__item">
-      <div class="chat-header__row">
-        <app-icon 
-          name="three-dots" 
-          color="var(--text-secondary)" 
-          size="var(--fs-xl)"
-        />
-      </div>
-      <!-- <chat-options-menu /> -->
+      <chat-options-menu :chat-id="chatId" />
     </div>
   </div>
 </template>
