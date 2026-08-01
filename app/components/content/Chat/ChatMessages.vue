@@ -76,13 +76,26 @@
       .on(
         'postgres_changes',
         {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'messages',
+          filter: `chat_id=eq.${chatId}`,
+        },
+        (payload) => {
+          const deletedId = payload.old.id as string;
+          messages.value = messages.value.filter((m) => m.id !== deletedId);
+          search.setMessages(messages.value);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
           event: 'INSERT',
           schema: 'public',
           table: 'message_reads',
         },
         (payload) => {
           const { message_id, user_id } = payload.new as { message_id: string; user_id: string };
-
           if (user_id !== currentUserId.value) {
             const message = messages.value.find((m) => m.id === message_id);
             if (message) message.is_read = true;
@@ -116,12 +129,17 @@
   <div class="chat-messages">
     <div v-if="isLoading">Loading...</div>
 
+    <div v-if="messages.length === 0" class="chat-messages__empty">
+      <p>No messages yet!</p>
+      <p>Start the conversation!</p>
+    </div>
+
     <template v-else>
       <template v-for="(message, index) in messages" :key="message.id">
         <div v-if="index === firstUnreadIndex" class="chat-messages__divider">
           <span>Unread messages</span>
         </div>
-
+        
         <chat-message
           :id="`msg-${message.id}`"
           :message="message"
@@ -136,6 +154,16 @@
 </template>
 
 <style scoped>
+  .chat-messages__empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    height: 100%;
+    gap: 10px;
+    font-size: var(--fs-xl);
+    color: var(--text-secondary);
+  }
   .chat-messages {
     flex: 1;
     min-height: 0;
