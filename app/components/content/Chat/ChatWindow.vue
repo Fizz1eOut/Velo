@@ -1,44 +1,77 @@
 <script setup lang="ts">
-  import { ref, watch, provide } from 'vue';
+  import { ref, watch, provide, onUnmounted } from 'vue';
+  import { useSupabaseClient } from '#imports';
+  import type { Database } from '~/../types/database';
   import { fetchChatById } from '~/api/chats/chatById';
   import { chatSearchKey, createChatSearch } from '~/composables/useChatSearch';
   import AppLoadingSpinner from '~/components/base/AppLoadingSpinner.vue';
   import ChatMessages from '~/components/content/Chat/ChatMessages.vue';
   import ChatInput from '~/components/content/Chat/ChatInput.vue';
   import ChatHeader from '~/components/content/Chat/ChatHeader.vue';
-
+ 
   interface ChatWindow {
     userId: string;
   }
   const props = defineProps<ChatWindow>();
-
+ 
+  const supabase = useSupabaseClient<Database>();
+ 
   const chatId = ref<string | null>(null);
   const isLoading = ref(false);
   const error = ref<string | null>(null);
-
+ 
   const search = createChatSearch();
   provide(chatSearchKey, search);
-
+ 
   watch(
     () => props.userId,
     async (id) => {
       if (!id) return;
-
+ 
       isLoading.value = true;
       error.value = null;
-
-      const { chatId: id_, error: err } =  await fetchChatById(id);
-
+ 
+      const { chatId: id_, error: err } = await fetchChatById(id);
+ 
       if (err) {
         error.value = 'Failed to load chat';
       } else {
         chatId.value = id_;
       }
-
+ 
       isLoading.value = false;
     },
     { immediate: true }
   );
+ 
+  let unsubscribeChatDeletion: (() => void) | null = null;
+ 
+  watch(chatId, (id) => {
+    unsubscribeChatDeletion?.();
+    unsubscribeChatDeletion = null;
+ 
+    if (!id) return;
+ 
+    const channel = supabase
+      .channel(`chat-deleted:${id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'chats',
+          filter: `id=eq.${id}`,
+        },
+        () => {
+          chatId.value = null;
+        }
+      )
+      .subscribe();
+ 
+    unsubscribeChatDeletion = () => supabase.removeChannel(channel);
+  });
+ 
+  onUnmounted(() => unsubscribeChatDeletion?.());
 </script>
 
 <template>
@@ -50,11 +83,6 @@
       <chat-header :chat-id="chatId" />
       <chat-messages :chat-id="chatId" />
       <chat-input :chat-id="chatId" />
-    </div>
-
-    <div v-else class="chat-window__empty">
-      <p>No messages yet</p>
-      <p>Start the conversation!</p>
     </div>
   </div>
 </template>
