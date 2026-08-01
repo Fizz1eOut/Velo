@@ -49,7 +49,7 @@
             <!-- <chat-profile-panel /> -->
           </div>
 
-          <chat-header-actions />
+          <chat-header-actions :chat-id="chatId" />
         </div>
       </app-container>
     </app-underlay>
