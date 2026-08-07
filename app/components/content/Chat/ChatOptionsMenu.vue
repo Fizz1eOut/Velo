@@ -3,6 +3,7 @@
   import { clearChat } from '~/api/chats/clearChat';
   import { deleteChat } from '~/api/chats/deleteChat';
   import { useConfirm } from '@/composables/useConfirm';
+  import { blockUser } from '~/api/blockUser/blockUser';
   import AppIcon from '~/components/base/AppIcon.vue';
   import AppButton from '~/components/base/AppButton.vue';
   import AppDropdown from '~/components/base/AppDropdown.vue';
@@ -10,10 +11,13 @@
 
   interface ChatOptionsMenu {
     chatId: string;
+    userId: string;
   }
   const props = defineProps<ChatOptionsMenu>();
 
-  const emit = defineEmits<{ (e: 'cleared'): void }>();
+  const emit = defineEmits<{
+    (e: 'cleared' | 'blocked'): void;
+  }>();
 
   const { confirm } = useConfirm();
 
@@ -50,6 +54,19 @@
     const { error } = await deleteChat(props.chatId);
     if (!error) emit('cleared');
   };
+
+  const onBlock = async () => {
+    const ok = await confirm({
+      title: 'Block user',
+      message: 'This user will no longer be able to message you or view your profile. Your chat with them will be deleted. Continue?',
+      confirmText: 'Block',
+      danger: true
+    });
+    if (!ok) return;
+ 
+    const { error } = await blockUser(props.userId);
+    if (!error) emit('blocked');
+  };
 </script>
 
 <template>
@@ -78,7 +95,7 @@
         <app-divider />
 
         <li class="options-menu__item">
-          <app-button class="options-menu__button button-red">
+          <app-button class="options-menu__button button-red" @click="onBlock">
             <app-icon 
               name="block"
               size="var(--fs-xl)"
