@@ -5,6 +5,7 @@
 
   interface ChatHeaderActions {
     chatId: string;
+    userId: string;
   }
   defineProps<ChatHeaderActions>();
 </script>
@@ -36,7 +37,7 @@
     </div>
 
     <div class="chat-header__item">
-      <chat-options-menu :chat-id="chatId" />
+      <chat-options-menu :chat-id="chatId" :user-id="userId"/>
     </div>
   </div>
 </template>
@@ -64,6 +65,7 @@
     cursor: pointer;
     transition: background-color var(--transition-slow);
     border-radius: var(--radius-sm);
+    cursor: not-allowed;
   }
   .chat-header__row:hover {
     background-color: var(--bg-surface-2);

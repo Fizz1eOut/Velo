@@ -11,6 +11,7 @@
 
   interface ChatHeaderProps {
     chatId: string;
+    userId: string;
   }
   const props = defineProps<ChatHeaderProps>();
   const profile = ref<ChatListItem['profile'] | null>(null);
@@ -49,7 +50,7 @@
             <!-- <chat-profile-panel /> -->
           </div>
 
-          <chat-header-actions :chat-id="chatId" />
+          <chat-header-actions :chat-id="chatId" :user-id="userId" />
         </div>
       </app-container>
     </app-underlay>

@@ -80,7 +80,7 @@
     <div v-else-if="error">{{ error }}</div>
 
     <div v-else-if="chatId" class="chat-window__content">
-      <chat-header :chat-id="chatId" />
+      <chat-header :chat-id="chatId" :user-id="userId" />
       <chat-messages :chat-id="chatId" />
       <chat-input :chat-id="chatId" />
     </div>
