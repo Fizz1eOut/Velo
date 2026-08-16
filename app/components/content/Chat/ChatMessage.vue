@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import { computed } from 'vue';
   import type { Message } from '~/interface/message.interface';
+  import ChatMessageAttachment from './ChatMessageAttachment.vue';
 
   interface ChatMessage {
     message: Message;
@@ -8,6 +9,10 @@
     highlightQuery?: string;
   }
   const props = defineProps<ChatMessage>();
+
+  const isAttachment = computed(() =>
+    ['image', 'video', 'audio', 'file'].includes(props.message.type)
+  );
 
   const highlightedText = computed(() => {
     const text = props.message.content ?? '';
@@ -29,7 +34,10 @@
       <div v-if="message.is_deleted" class="chat-message__deleted">
         Message deleted
       </div>
-      <div v-else class="chat-message__content" v-html="highlightedText"/>
+
+      <chat-message-attachment v-else-if="isAttachment" :message="message" />
+
+      <div v-else class="chat-message__content" v-html="highlightedText" />
 
       <div class="chat-message__time">
         {{ formatTime(message.created_at) }}
