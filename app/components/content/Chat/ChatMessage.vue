@@ -10,6 +10,10 @@
   }
   const props = defineProps<ChatMessage>();
 
+  const emit = defineEmits<{
+    (e: 'media-loaded'): void;
+  }>();
+
   const isAttachment = computed(() =>
     ['image', 'video', 'audio', 'file'].includes(props.message.type)
   );
@@ -35,7 +39,11 @@
         Message deleted
       </div>
 
-      <chat-message-attachment v-else-if="isAttachment" :message="message" />
+      <chat-message-attachment
+        v-else-if="isAttachment"
+        :message="message"
+        @media-loaded="emit('media-loaded')"
+      />
 
       <div v-else class="chat-message__content" v-html="highlightedText" />
 
