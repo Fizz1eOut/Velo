@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, watch, nextTick, onUnmounted, computed, inject } from 'vue';
+  import { ref, watch, nextTick, onMounted, onUnmounted, computed, inject } from 'vue';
   import { chatSearchKey } from '~/composables/useChatSearch';
   import { listMessages } from '~/api/messages/listMessages';
   import { markMessagesAsRead } from '~/api/messages/markMessagesAsRead';
@@ -16,6 +16,7 @@
   const messages = ref<Message[]>([]);
   const isLoading = ref(false);
   const bottomRef = ref<HTMLDivElement | null>(null);
+  const containerRef = ref<HTMLDivElement | null>(null);
   const currentUserId = ref<string | null>(null);
   const supabase = useSupabaseClient<Database>();
 
@@ -23,14 +24,28 @@
   if (!search) throw new Error('ChatMessages must be used within a ChatWindow');
 
   const firstUnreadIndex = computed(() =>
-    messages.value.findIndex( 
+    messages.value.findIndex(
       (m) => !m.is_read && m.sender_id !== currentUserId.value
     )
   );
 
-  const scrollToBottom = async () => {
+  const BOTTOM_THRESHOLD = 80;
+  const shouldStickToBottom = ref(true);
+
+  const isNearBottom = () => {
+    const el = containerRef.value;
+    if (!el) return true;
+    return el.scrollHeight - el.scrollTop - el.clientHeight < BOTTOM_THRESHOLD;
+  };
+
+  const handleScroll = () => {
+    shouldStickToBottom.value = isNearBottom();
+  };
+
+  const scrollToBottom = async (instant = false) => {
     await nextTick();
-    bottomRef.value?.scrollIntoView({ behavior: 'smooth' });
+    shouldStickToBottom.value = true;
+    bottomRef.value?.scrollIntoView({ behavior: instant ? 'auto' : 'smooth' });
   };
 
   const scrollToMessage = async (messageId: string) => {
@@ -44,6 +59,12 @@
     if (search.activeMatch.value) scrollToMessage(search.activeMatch.value.id);
   });
 
+  const handleMediaLoaded = () => {
+    if (shouldStickToBottom.value) {
+      scrollToBottom(true);
+    }
+  };
+
   const loadMessages = async (chatId: string) => {
     isLoading.value = true;
     await markMessagesAsRead(chatId);
@@ -51,7 +72,7 @@
     messages.value = data ?? [];
     search.setMessages(messages.value);
     isLoading.value = false;
-    scrollToBottom();
+    scrollToBottom(true);
   };
 
   let unsubscribe: (() => void) | null = null;
@@ -68,9 +89,15 @@
           filter: `chat_id=eq.${chatId}`,
         },
         (payload) => {
-          messages.value.push(payload.new as Message);
+          const message = payload.new as Message;
+          const isOwn = message.sender_id === currentUserId.value;
+
+          messages.value.push(message);
           search.setMessages(messages.value);
-          scrollToBottom();
+
+          if (isOwn || shouldStickToBottom.value) {
+            scrollToBottom();
+          }
         }
       )
       .on(
@@ -122,11 +149,18 @@
     { immediate: true }
   );
 
-  onUnmounted(() => unsubscribe?.());
+  onMounted(() => {
+    containerRef.value?.addEventListener('scroll', handleScroll, { passive: true });
+  });
+
+  onUnmounted(() => {
+    containerRef.value?.removeEventListener('scroll', handleScroll);
+    unsubscribe?.();
+  });
 </script>
 
 <template>
-  <div class="chat-messages">
+  <div ref="containerRef" class="chat-messages">
     <div v-if="isLoading">Loading...</div>
 
     <div v-if="messages.length === 0" class="chat-messages__empty">
@@ -139,17 +173,18 @@
         <div v-if="index === firstUnreadIndex" class="chat-messages__divider">
           <span>Unread messages</span>
         </div>
-        
+
         <chat-message
           :id="`msg-${message.id}`"
           :message="message"
           :is-own="message.sender_id === currentUserId"
           :highlight-query="search.query.value"
+          @media-loaded="handleMediaLoaded"
         />
       </template>
     </template>
 
-    <div ref="bottomRef" />
+    <div ref="bottomRef" style="overflow-anchor: none;" />
   </div>
 </template>
 
@@ -168,6 +203,7 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     padding-right: 5px;
   }
   .chat-messages::-webkit-scrollbar {

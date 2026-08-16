@@ -10,6 +10,10 @@
   }
   const props = defineProps<ChatMessageAttachment>();
 
+  const emit = defineEmits<{
+    (e: 'media-loaded'): void;
+  }>();
+
   const supabase = useSupabaseClient<Database>();
 
   const signedUrl = ref<string | null>(null);
@@ -41,6 +45,8 @@
         isLoading.value = false;
         return loadSignedUrl(path, attempt + 1);
       }
+      
+      emit('media-loaded');
     } else if (data) {
       signedUrl.value = data.signedUrl;
     }
@@ -55,6 +61,8 @@
     },
     { immediate: true }
   );
+
+  const onMediaLoad = () => emit('media-loaded');
 </script>
 
 <template>
@@ -70,6 +78,8 @@
         :alt="message.file_name ?? 'image'"
         class="chat-attachment__image"
         @click="isLightboxOpen = true"
+        @load="onMediaLoad"
+        @error="onMediaLoad"
       >
 
       <video
@@ -77,6 +87,8 @@
         :src="signedUrl"
         controls
         class="chat-attachment__video"
+        @loadedmetadata="onMediaLoad"
+        @error="onMediaLoad"
       />
 
       <audio
@@ -84,6 +96,8 @@
         :src="signedUrl"
         controls
         class="chat-attachment__audio"
+        @loadedmetadata="onMediaLoad"
+        @error="onMediaLoad"
       />
 
       <a
@@ -114,8 +128,9 @@
 
 <style scoped>
   .chat-attachment__image {
-    cursor: zoom-in;
     max-width: 400px;
+    min-height: 120px;
+    background: var(--bg-surface-2);
     border-radius: var(--radius-sm, 8px);
     display: block;
   }
