@@ -1,20 +1,23 @@
 <script setup lang="ts">
-  import { ref, watch, nextTick, onMounted, onUnmounted, computed, inject } from 'vue';
+  import { ref, shallowRef, watch, nextTick, onMounted, onUnmounted, computed, inject } from 'vue';
   import { chatSearchKey } from '~/composables/useChatSearch';
   import { listMessages } from '~/api/messages/listMessages';
   import { markMessagesAsRead } from '~/api/messages/markMessagesAsRead';
   import { useSupabaseClient } from '#imports';
-  import type { Message } from '~/interface/message.interface';
+  import type { Message } from '~/interface/message.interface'; 
   import type { Database } from '~/../types/database';
   import ChatMessage from './ChatMessage.vue';
+  import { chatTypingKey } from '~/composables/useChatTyping';
+  import AppTypingIndicator from '~/components/base/AppTypingIndicator.vue';
 
   interface ChatMessages {
     chatId: string;
   }
   const props = defineProps<ChatMessages>();
 
+  const typing = inject(chatTypingKey, shallowRef(null));
   const messages = ref<Message[]>([]);
-  const isLoading = ref(false);
+  const isLoading = ref(false); 
   const bottomRef = ref<HTMLDivElement | null>(null);
   const containerRef = ref<HTMLDivElement | null>(null);
   const currentUserId = ref<string | null>(null);
@@ -149,6 +152,12 @@
     { immediate: true }
   );
 
+  watch(() => typing.value?.isPeerTyping.value, (isTyping) => {
+    if (isTyping && shouldStickToBottom.value) {
+      scrollToBottom();
+    }
+  });
+
   onMounted(() => {
     containerRef.value?.addEventListener('scroll', handleScroll, { passive: true });
   });
@@ -163,32 +172,39 @@
   <div ref="containerRef" class="chat-messages">
     <div v-if="isLoading">Loading...</div>
 
-    <div v-if="messages.length === 0" class="chat-messages__empty">
+    <div v-if="messages.length === 0 && !isLoading" class="chat-messages__empty">
       <p>No messages yet!</p>
       <p>Start the conversation!</p>
     </div>
 
-    <template v-else>
-      <template v-for="(message, index) in messages" :key="message.id">
-        <div v-if="index === firstUnreadIndex" class="chat-messages__divider">
-          <span>Unread messages</span>
-        </div>
+    <template v-for="(message, index) in messages" :key="message.id">
+      <div v-if="index === firstUnreadIndex" class="chat-messages__divider">
+        <span>Unread messages</span>
+      </div>
 
-        <chat-message
-          :id="`msg-${message.id}`"
-          :message="message"
-          :is-own="message.sender_id === currentUserId"
-          :highlight-query="search.query.value"
-          @media-loaded="handleMediaLoaded"
-        />
-      </template>
+      <chat-message
+        :id="`msg-${message.id}`"
+        :message="message"
+        :is-own="message.sender_id === currentUserId"
+        :highlight-query="search.query.value"
+        @media-loaded="handleMediaLoaded"
+      />
     </template>
+
+    <div v-if="typing?.isPeerTyping.value" class="chat-messages__typing">
+      <app-typing-indicator size="md" />
+    </div>
 
     <div ref="bottomRef" style="overflow-anchor: none;" />
   </div>
 </template>
 
 <style scoped>
+  .chat-messages__typing {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 10px;
+  }
   .chat-messages__empty {
     display: flex;
     justify-content: center;
