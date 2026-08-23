@@ -1,77 +1,89 @@
 <script setup lang="ts">
-  import { ref, watch, provide, onUnmounted } from 'vue';
-  import { useSupabaseClient } from '#imports';
+  import { ref, watch, provide, onUnmounted, shallowRef } from 'vue';
+  import { useSupabaseClient, useSupabaseUser } from '#imports';
   import type { Database } from '~/../types/database';
   import { fetchChatById } from '~/api/chats/chatById';
   import { chatSearchKey, createChatSearch } from '~/composables/useChatSearch';
+  import { chatTypingKey, createChatTyping, type ChatTyping } from '~/composables/useChatTyping';
   import AppLoadingSpinner from '~/components/base/AppLoadingSpinner.vue';
   import ChatMessages from '~/components/content/Chat/ChatMessages.vue';
   import ChatInput from '~/components/content/Chat/ChatInput.vue';
   import ChatHeader from '~/components/content/Chat/ChatHeader.vue';
- 
+
   interface ChatWindow {
     userId: string;
   }
   const props = defineProps<ChatWindow>();
- 
+
   const supabase = useSupabaseClient<Database>();
- 
+  const currentUser = useSupabaseUser();
+
   const chatId = ref<string | null>(null);
   const isLoading = ref(false);
   const error = ref<string | null>(null);
- 
+
   const search = createChatSearch();
   provide(chatSearchKey, search);
- 
+
+  const typing = shallowRef<ChatTyping | null>(null);
+  provide(chatTypingKey, typing);
+
   watch(
     () => props.userId,
     async (id) => {
       if (!id) return;
- 
+
       isLoading.value = true;
       error.value = null;
- 
+
       const { chatId: id_, error: err } = await fetchChatById(id);
- 
+
       if (err) {
         error.value = 'Failed to load chat';
       } else {
         chatId.value = id_;
       }
- 
+
       isLoading.value = false;
     },
     { immediate: true }
   );
- 
+
+  watch(
+    [chatId, currentUser],
+    ([id, user]) => {
+      typing.value?.destroy();
+      typing.value = null;
+      if (!id || !user) return;
+      typing.value = createChatTyping(id, user.sub);
+    },
+    { immediate: true }
+  );
+
   let unsubscribeChatDeletion: (() => void) | null = null;
- 
+
   watch(chatId, (id) => {
     unsubscribeChatDeletion?.();
     unsubscribeChatDeletion = null;
- 
+
     if (!id) return;
- 
+
     const channel = supabase
       .channel(`chat-deleted:${id}`)
       .on(
         'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'chats',
-          filter: `id=eq.${id}`,
-        },
-        () => {
-          chatId.value = null;
-        }
+        { event: 'DELETE', schema: 'public', table: 'chats', filter: `id=eq.${id}` },
+        () => { chatId.value = null; }
       )
       .subscribe();
- 
+
     unsubscribeChatDeletion = () => supabase.removeChannel(channel);
   });
- 
-  onUnmounted(() => unsubscribeChatDeletion?.());
+
+  onUnmounted(() => {
+    unsubscribeChatDeletion?.();
+    typing.value?.destroy();
+  });
 </script>
 
 <template>
