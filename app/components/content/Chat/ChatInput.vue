@@ -1,10 +1,11 @@
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import { ref, shallowRef, watch, inject } from 'vue';
   import { sendMessage } from '~/api/messages/sendMessage';
   import { sendAttachment } from '~/api/messages/sendAttachment';
+  import { chatTypingKey } from '~/composables/useChatTyping';
   import AppUnderlay from '~/components/base/AppUnderlay.vue';
   import AppContainer from '~/components/base/AppContainer.vue';
-  import AppInput from '~/components/inputs/AppInput.vue';
+  import AppInput from '~/components/inputs/AppInput.vue';  
   import AppButton from '~/components/base/AppButton.vue';
   import AppIcon from '~/components/base/AppIcon.vue';
 
@@ -13,14 +14,24 @@
   }
   const props = defineProps<ChatInput>();
 
+  const typing = inject(chatTypingKey, shallowRef(null));
   const content = ref<string>('');
   const isSending = ref(false);
   const fileInput = ref<HTMLInputElement | null>(null);
+
+  watch(content, (value) => {
+    if (value.trim()) {
+      typing?.value?.handleInput();
+    } else {
+      typing?.value?.handleStopTyping();
+    }
+  });
 
   const send = async () => {
     if (!content.value.trim() || isSending.value) return;
 
     isSending.value = true;
+    typing?.value?.handleStopTyping();
     const { error } = await sendMessage(props.chatId, content.value);
 
     if (!error) {
