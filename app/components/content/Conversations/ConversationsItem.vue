@@ -60,6 +60,10 @@
     margin-top: 4px;
     font-size: var(--fs-sm);
     color: var(--text-secondary);
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .conversation-item__time {
     font-size: var(--fs-xs);
