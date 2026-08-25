@@ -1,7 +1,9 @@
 <script setup lang="ts">
-  import { computed } from 'vue';
+  import { reactive, computed } from 'vue';
   import type { Message } from '~/interface/message.interface';
+  import { useActiveMessageMenu } from '~/composables/useActiveMessageMenu';
   import ChatMessageAttachment from './ChatMessageAttachment.vue';
+  import ChatMessageMenu from '~/components/content/Chat/ChatMessageMenu.vue';
 
   interface ChatMessage {
     message: Message;
@@ -30,11 +32,52 @@
 
   const formatTime = (date: string) =>
     new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  const { isActive, open: openMenu, close: closeMenu } = useActiveMessageMenu(props.message.id);
+ 
+  const menuPosition = reactive({ x: 0, y: 0 });
+ 
+  const onContextMenu = (e: MouseEvent) => {
+    e.preventDefault();
+    menuPosition.x = e.clientX;
+    menuPosition.y = e.clientY;
+    openMenu();
+  };
+ 
+  let pressTimer: ReturnType<typeof setTimeout> | null = null;
+  const LONG_PRESS_MS = 450;
+ 
+  const onTouchStart = (e: TouchEvent) => {
+    const touch = e.touches[0];
+    if (!touch) return;
+ 
+    pressTimer = setTimeout(() => {
+      menuPosition.x = touch.clientX;
+      menuPosition.y = touch.clientY;
+      openMenu();
+    }, LONG_PRESS_MS);
+  };
+ 
+  const clearPressTimer = () => {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      pressTimer = null;
+    }
+  };
 </script>
 
 <template>
-  <div class="chat-message" :class="{ 'chat-message--own': isOwn }">
-    <div class="chat-message__bubble">
+  <div
+    class="chat-message"
+    :class="{ 'chat-message--own': isOwn }"
+  >
+    <div
+      class="chat-message__bubble"
+      @contextmenu="onContextMenu"
+      @touchstart="onTouchStart"
+      @touchend="clearPressTimer"
+      @touchmove="clearPressTimer"
+    >
       <div v-if="message.is_deleted" class="chat-message__deleted">
         Message deleted
       </div>
@@ -54,11 +97,18 @@
         </div>
       </div>
     </div>
+    <chat-message-menu
+      :active="isActive"
+      :x="menuPosition.x"
+      :y="menuPosition.y"
+      @close="closeMenu"
+    />
   </div>
 </template>
 
 <style scoped>
   .chat-message {
+    position: relative;
     display: flex;
     justify-content: flex-start;
     align-items: center;
