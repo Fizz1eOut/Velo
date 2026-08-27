@@ -1,4 +1,5 @@
 <script setup lang="ts">
+  import { ref, reactive, watch, nextTick } from 'vue';
   import AppDropdown from '~/components/base/AppDropdown.vue';
   import AppButton from '~/components/base/AppButton.vue';
   import AppIcon from '~/components/base/AppIcon.vue';
@@ -26,11 +27,50 @@
     emit('close');
     await toggleReaction(props.message.id, emoji);
   };
+
+  const PADDING = 8;
+ 
+  const anchorRef = ref<HTMLDivElement | null>(null);
+  const position = reactive({ left: props.x, top: props.y });
+ 
+  watch(
+    () => props.active,
+    async (active) => {
+      if (!active) return;
+ 
+      position.left = props.x;
+      position.top = props.y;
+ 
+      await nextTick();
+ 
+      const dropdownEl = anchorRef.value?.querySelector<HTMLElement>('.dropdown');
+      if (!dropdownEl) return;
+ 
+      const rect = dropdownEl.getBoundingClientRect();
+ 
+      let left = props.x;
+      let top = props.y;
+ 
+      if (rect.right > window.innerWidth - PADDING) {
+        left -= rect.right - (window.innerWidth - PADDING);
+      }
+      if (rect.bottom > window.innerHeight - PADDING) {
+        top -= rect.bottom - (window.innerHeight - PADDING);
+      }
+ 
+      position.left = Math.max(PADDING, left);
+      position.top = Math.max(PADDING, top);
+    }
+  );
 </script>
 
 <template>
   <Teleport to="body">
-    <div class="message-menu__anchor" :style="{ left: `${x}px`, top: `${y}px` }">
+    <div
+      ref="anchorRef"
+      class="message-menu__anchor"
+      :style="{ left: `${position.left}px`, top: `${position.top}px` }"
+    >
       <app-dropdown
         :active="active"
         style="width: 260px; max-width: calc(100vw - 20px);"
