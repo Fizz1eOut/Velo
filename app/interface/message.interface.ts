@@ -1,3 +1,10 @@
+export interface ReactionGroup {
+  emoji: string;
+  count: number;
+  reactedByMe: boolean;
+  userIds: string[];
+}
+
 export interface Message {
   id: string;
   chat_id: string;
@@ -17,6 +24,7 @@ export interface Message {
   is_read: boolean;
   created_at: string;
   updated_at: string;
+  reactions?: ReactionGroup[];
 }
 
 export type MessageInsert = Pick<Message, 'chat_id' | 'sender_id' | 'type'> &

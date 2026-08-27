@@ -2,6 +2,8 @@
   import { reactive, computed } from 'vue';
   import type { Message } from '~/interface/message.interface';
   import { useActiveMessageMenu } from '~/composables/useActiveMessageMenu';
+  import { toggleReaction } from '~/api/messages/toggleReaction';
+  import { applyLocalReactionToggle } from '~/utils/reactions';
   import ChatMessageAttachment from './ChatMessageAttachment.vue';
   import ChatMessageMenu from '~/components/content/Chat/ChatMessageMenu.vue';
 
@@ -9,12 +11,18 @@
     message: Message;
     isOwn: boolean;
     highlightQuery?: string;
+    currentUserId: string | null;
   }
   const props = defineProps<ChatMessage>();
 
   const emit = defineEmits<{
     (e: 'media-loaded'): void;
   }>();
+
+  const onReactionClick = (emoji: string) => {
+    applyLocalReactionToggle(props.message, emoji, props.currentUserId);
+    toggleReaction(props.message.id, emoji);
+  };
 
   const isAttachment = computed(() =>
     ['image', 'video', 'audio', 'file'].includes(props.message.type)
@@ -96,11 +104,25 @@
           {{ message.is_read ? '✓✓' : '✓' }}
         </div>
       </div>
+
+      <div v-if="message.reactions?.length" class="chat-message__reactions">
+        <button
+          v-for="r in message.reactions"
+          :key="r.emoji"
+          class="chat-message__reaction"
+          :class="{ 'is-mine': r.reactedByMe }"
+          @click="onReactionClick(r.emoji)"
+        >
+          {{ r.emoji }} <span v-if="r.count > 1">{{ r.count }}</span>
+        </button>
+      </div>
     </div>
     <chat-message-menu
       :active="isActive"
       :x="menuPosition.x"
       :y="menuPosition.y"
+      :message="message"
+      :current-user-id="currentUserId"
       @close="closeMenu"
     />
   </div>
@@ -119,6 +141,7 @@
     justify-content: flex-end;
   }
   .chat-message__bubble {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -163,6 +186,16 @@
   }
   .chat-message__check.is-read {
     color: var(--primary-pressed);
+  }
+  .chat-message__reactions {
+    position: absolute;
+    bottom: -10px;
+    left: 20px;
+    z-index: 1;
+  }
+  .chat-message__reaction.is-mine {
+    background-color: transparent;
+    font-size: var(--fs-xl);
   }
   @media (max-width: 768px) {
     .chat-message__content {
