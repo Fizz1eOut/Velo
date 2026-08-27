@@ -71,7 +71,7 @@
   const loadMessages = async (chatId: string) => {
     isLoading.value = true;
     await markMessagesAsRead(chatId);
-    const { data } = await listMessages(chatId);
+    const { data } = await listMessages(chatId, currentUserId.value);
     messages.value = data ?? [];
     search.setMessages(messages.value);
     isLoading.value = false;
@@ -85,12 +85,7 @@
       .channel(`chat:${chatId}`)
       .on(
         'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `chat_id=eq.${chatId}`,
-        },
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `chat_id=eq.${chatId}` },
         (payload) => {
           const message = payload.new as Message;
           const isOwn = message.sender_id === currentUserId.value;
@@ -105,12 +100,7 @@
       )
       .on(
         'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'messages',
-          filter: `chat_id=eq.${chatId}`,
-        },
+        { event: 'DELETE', schema: 'public', table: 'messages', filter: `chat_id=eq.${chatId}` },
         (payload) => {
           const deletedId = payload.old.id as string;
           messages.value = messages.value.filter((m) => m.id !== deletedId);
@@ -119,16 +109,87 @@
       )
       .on(
         'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'message_reads',
-        },
+        { event: 'INSERT', schema: 'public', table: 'message_reads' },
         (payload) => {
           const { message_id, user_id } = payload.new as { message_id: string; user_id: string };
           if (user_id !== currentUserId.value) {
             const message = messages.value.find((m) => m.id === message_id);
             if (message) message.is_read = true;
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'reactions' },
+        (payload) => {
+          const row = payload.new as { message_id: string; user_id: string; emoji: string };
+          const message = messages.value.find((m) => m.id === row.message_id);
+          if (!message) return;
+
+          message.reactions ??= [];
+          let g = message.reactions.find((r) => r.emoji === row.emoji);
+          if (!g) {
+            g = { emoji: row.emoji, count: 0, reactedByMe: false, userIds: [] };
+            message.reactions.push(g);
+          }
+          if (!g.userIds.includes(row.user_id)) {
+            g.userIds.push(row.user_id);
+            g.count++;
+            if (row.user_id === currentUserId.value) g.reactedByMe = true;
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'reactions' },
+        (payload) => {
+          const newRow = payload.new as { message_id: string; user_id: string; emoji: string };
+          const oldRow = payload.old as { emoji?: string };
+          const message = messages.value.find((m) => m.id === newRow.message_id);
+          if (!message?.reactions) return;
+
+          if (oldRow.emoji && oldRow.emoji !== newRow.emoji) {
+            const oldGroup = message.reactions.find((r) => r.emoji === oldRow.emoji);
+            if (oldGroup) {
+              oldGroup.userIds = oldGroup.userIds.filter((id) => id !== newRow.user_id);
+              oldGroup.count--;
+              if (newRow.user_id === currentUserId.value) oldGroup.reactedByMe = false;
+              if (oldGroup.count <= 0) {
+                message.reactions = message.reactions.filter((r) => r !== oldGroup);
+              }
+            }
+          }
+
+          let newGroup = message.reactions.find((r) => r.emoji === newRow.emoji);
+          if (!newGroup) {
+            newGroup = { emoji: newRow.emoji, count: 0, reactedByMe: false, userIds: [] };
+            message.reactions.push(newGroup);
+          }
+          if (!newGroup.userIds.includes(newRow.user_id)) {
+            newGroup.userIds.push(newRow.user_id);
+            newGroup.count++;
+            if (newRow.user_id === currentUserId.value) newGroup.reactedByMe = true;
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'reactions' },
+        (payload) => {
+          const row = payload.old as { message_id?: string; user_id?: string; emoji?: string };
+          if (!row.message_id) return;
+
+          const message = messages.value.find((m) => m.id === row.message_id);
+          if (!message?.reactions) return;
+
+          const g = message.reactions.find((r) => r.emoji === row.emoji);
+          if (!g) return;
+
+          g.userIds = g.userIds.filter((id) => id !== row.user_id);
+          g.count--;
+          if (row.user_id === currentUserId.value) g.reactedByMe = false;
+          if (g.count <= 0) {
+            message.reactions = message.reactions.filter((r) => r !== g);
           }
         }
       )
@@ -186,6 +247,7 @@
         :id="`msg-${message.id}`"
         :message="message"
         :is-own="message.sender_id === currentUserId"
+        :current-user-id="currentUserId"
         :highlight-query="search.query.value"
         @media-loaded="handleMediaLoaded"
       />
