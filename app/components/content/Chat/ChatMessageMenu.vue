@@ -1,8 +1,9 @@
 <script setup lang="ts">
-  import { ref, reactive, watch, nextTick } from 'vue';
+  import { ref, reactive, watch, nextTick, inject } from 'vue';
   import AppDropdown from '~/components/base/AppDropdown.vue';
   import AppButton from '~/components/base/AppButton.vue';
   import AppIcon from '~/components/base/AppIcon.vue';
+  import { chatReplyKey } from '~/composables/useChatReply';
   import { toggleReaction } from '~/api/messages/toggleReaction';
   import { applyLocalReactionToggle } from '~/utils/reactions';
   import type { Message } from '~/interface/message.interface';
@@ -62,6 +63,12 @@
       position.top = Math.max(PADDING, top);
     }
   );
+
+  const reply = inject(chatReplyKey);
+  const onReply = () => {
+    reply?.setReplyTo(props.message);
+    emit('close');
+  };
 </script>
 
 <template>
@@ -86,12 +93,8 @@
             {{ emoji }}
           </button>
         </div>
-        <app-button class="message-menu__button">
-          <app-icon 
-            name="reply"
-            color="var(--text-secondary)"
-            size="var(--fs-xl)"
-          />
+        <app-button class="message-menu__button" @click="onReply">
+          <app-icon name="reply" color="var(--text-secondary)" size="var(--fs-xl)" />
           Reply
         </app-button>
 
