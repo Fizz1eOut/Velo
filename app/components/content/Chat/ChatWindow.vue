@@ -5,6 +5,7 @@
   import { fetchChatById } from '~/api/chats/chatById';
   import { chatSearchKey, createChatSearch } from '~/composables/useChatSearch';
   import { chatTypingKey, createChatTyping, type ChatTyping } from '~/composables/useChatTyping';
+  import { chatReplyKey, createChatReply } from '~/composables/useChatReply';
   import AppLoadingSpinner from '~/components/base/AppLoadingSpinner.vue';
   import ChatMessages from '~/components/content/Chat/ChatMessages.vue';
   import ChatInput from '~/components/content/Chat/ChatInput.vue';
@@ -27,6 +28,12 @@
 
   const typing = shallowRef<ChatTyping | null>(null);
   provide(chatTypingKey, typing);
+
+  const reply = createChatReply();
+  provide(chatReplyKey, reply);
+  watch(chatId, () => {
+    reply.clearReply();
+  });
 
   watch(
     () => props.userId,
