@@ -88,7 +88,23 @@
         { event: 'INSERT', schema: 'public', table: 'messages', filter: `chat_id=eq.${chatId}` },
         (payload) => {
           const message = payload.new as Message;
+
+          if (messages.value.some((m) => m.id === message.id)) return; // защита от дублей
+
           const isOwn = message.sender_id === currentUserId.value;
+
+          if (message.reply_to_id) {
+            const parent = messages.value.find((m) => m.id === message.reply_to_id);
+            if (parent) {
+              message.reply_to = {
+                id: parent.id,
+                content: parent.content,
+                sender_id: parent.sender_id,
+                type: parent.type,
+                is_deleted: parent.is_deleted,
+              };
+            }
+          }
 
           messages.value.push(message);
           search.setMessages(messages.value);
@@ -250,6 +266,7 @@
         :current-user-id="currentUserId"
         :highlight-query="search.query.value"
         @media-loaded="handleMediaLoaded"
+        @scroll-to-reply="scrollToMessage"
       />
     </template>
 
