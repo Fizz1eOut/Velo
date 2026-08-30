@@ -5,6 +5,14 @@ export interface ReactionGroup {
   userIds: string[];
 }
 
+export interface ReplyPreview {
+  id: string;
+  content: string | null;
+  sender_id: string;
+  type: Message['type'];
+  is_deleted: boolean;
+}
+
 export interface Message {
   id: string;
   chat_id: string;
@@ -17,6 +25,7 @@ export interface Message {
   file_mime: string | null;
   thumbnail_url: string | null;
   reply_to_id: string | null;
+  reply_to?: ReplyPreview | null;
   forwarded_from: string | null;
   is_edited: boolean;
   is_deleted: boolean;
