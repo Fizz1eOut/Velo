@@ -1,23 +1,37 @@
 <script setup lang="ts">
-  import { ref, shallowRef, watch, inject } from 'vue';
+  import { ref, shallowRef, watch, inject, computed, onMounted } from 'vue';
   import { sendMessage } from '~/api/messages/sendMessage';
   import { sendAttachment } from '~/api/messages/sendAttachment';
   import { chatTypingKey } from '~/composables/useChatTyping';
+  import { chatReplyKey } from '~/composables/useChatReply';
+  import { useSupabaseClient } from '#imports';
+  import type { Database } from '~/../types/database';
   import AppUnderlay from '~/components/base/AppUnderlay.vue';
   import AppContainer from '~/components/base/AppContainer.vue';
-  import AppInput from '~/components/inputs/AppInput.vue';  
+  import AppInput from '~/components/inputs/AppInput.vue';
   import AppButton from '~/components/base/AppButton.vue';
   import AppIcon from '~/components/base/AppIcon.vue';
+  import ChatMessageReplyPreview from '~/components/content/Chat/ChatMessageReplyPreview.vue';
 
   interface ChatInput {
     chatId: string;
+    peerName?: string;
   }
   const props = defineProps<ChatInput>();
 
+  const supabase = useSupabaseClient<Database>();
   const typing = inject(chatTypingKey, shallowRef(null));
+  const reply = inject(chatReplyKey);
+
   const content = ref<string>('');
   const isSending = ref(false);
   const fileInput = ref<HTMLInputElement | null>(null);
+  const currentUserId = ref<string | null>(null);
+
+  onMounted(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    currentUserId.value = user?.id ?? null;
+  });
 
   watch(content, (value) => {
     if (value.trim()) {
@@ -27,15 +41,23 @@
     }
   });
 
+  const replyTitle = computed(() => {
+    const target = reply?.replyTarget.value;
+    if (!target) return '';
+    const who = target.sender_id === currentUserId.value ? 'yourself' : (props.peerName ?? 'the sender');
+    return `Reply to ${who}`;
+  });
+
   const send = async () => {
     if (!content.value.trim() || isSending.value) return;
 
     isSending.value = true;
     typing?.value?.handleStopTyping();
-    const { error } = await sendMessage(props.chatId, content.value);
+    const { error } = await sendMessage(props.chatId, content.value, reply?.replyTarget.value?.id);
 
     if (!error) {
       content.value = '';
+      reply?.clearReply();
     }
 
     isSending.value = false;
@@ -70,6 +92,15 @@
   <div class="chat-input">
     <app-underlay>
       <app-container>
+        <chat-message-reply-preview
+          v-if="reply?.replyTarget.value"
+          class="chat-input__reply"
+          :reply="reply.replyTarget.value"
+          :title="replyTitle"
+          closable
+          @close="reply?.clearReply()"
+        />
+
         <div class="chat-input__body">
           <input
             ref="fileInput"
@@ -79,11 +110,7 @@
             @change="onFileSelected"
           >
           <app-button class="chat-input__attach" @click="openFilePicker">
-            <app-icon 
-              name="paperclip" 
-              size="var(--fs-2xl)"
-              color="var(--text-secondary)"
-            />
+            <app-icon name="paperclip" size="var(--fs-2xl)" color="var(--text-secondary)" />
           </app-button>
 
           <app-input
@@ -91,16 +118,12 @@
             placeholder="Type a message..."
             @keydown="onKeydown"
           />
-          <app-button 
-            :disabled="isSending || !content.trim()" 
+          <app-button
+            :disabled="isSending || !content.trim()"
             class="chat-input__button"
             @click="send"
           >
-            <app-icon 
-              name="send"
-              size="var(--fs-2xl)"
-              color="#fff"
-            />
+            <app-icon name="send" size="var(--fs-2xl)" color="#fff" />
           </app-button>
         </div>
       </app-container>
@@ -139,5 +162,8 @@
   }
   .chat-input__attach:hover {
     background-color: var(--bg-surface-2);
+  }
+  .chat-input__reply {
+    margin-bottom: 6px;
   }
 </style>
