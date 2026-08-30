@@ -6,6 +6,7 @@
   import { applyLocalReactionToggle } from '~/utils/reactions';
   import ChatMessageAttachment from './ChatMessageAttachment.vue';
   import ChatMessageMenu from '~/components/content/Chat/ChatMessageMenu.vue';
+  import ChatMessageReplyPreview from '~/components/content/Chat/ChatMessageReplyPreview.vue';
 
   interface ChatMessage {
     message: Message;
@@ -17,7 +18,12 @@
 
   const emit = defineEmits<{
     (e: 'media-loaded'): void;
+    (e: 'scroll-to-reply', id: string): void;
   }>();
+
+  const onReplyPreviewClick = () => {
+    if (props.message.reply_to?.id) emit('scroll-to-reply', props.message.reply_to.id);
+  };
 
   const onReactionClick = (emoji: string) => {
     applyLocalReactionToggle(props.message, emoji, props.currentUserId);
@@ -42,30 +48,30 @@
     new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   const { isActive, open: openMenu, close: closeMenu } = useActiveMessageMenu(props.message.id);
- 
+
   const menuPosition = reactive({ x: 0, y: 0 });
- 
+
   const onContextMenu = (e: MouseEvent) => {
     e.preventDefault();
     menuPosition.x = e.clientX;
     menuPosition.y = e.clientY;
     openMenu();
   };
- 
+
   let pressTimer: ReturnType<typeof setTimeout> | null = null;
   const LONG_PRESS_MS = 450;
- 
+
   const onTouchStart = (e: TouchEvent) => {
     const touch = e.touches[0];
     if (!touch) return;
- 
+
     pressTimer = setTimeout(() => {
       menuPosition.x = touch.clientX;
       menuPosition.y = touch.clientY;
       openMenu();
     }, LONG_PRESS_MS);
   };
- 
+
   const clearPressTimer = () => {
     if (pressTimer) {
       clearTimeout(pressTimer);
@@ -75,10 +81,7 @@
 </script>
 
 <template>
-  <div
-    class="chat-message"
-    :class="{ 'chat-message--own': isOwn }"
-  >
+  <div class="chat-message" :class="{ 'chat-message--own': isOwn }">
     <div
       class="chat-message__bubble"
       @contextmenu="onContextMenu"
@@ -86,6 +89,12 @@
       @touchend="clearPressTimer"
       @touchmove="clearPressTimer"
     >
+      <chat-message-reply-preview
+        v-if="message.reply_to"
+        :reply="message.reply_to"
+        @click="onReplyPreviewClick"
+      />
+
       <div v-if="message.is_deleted" class="chat-message__deleted">
         Message deleted
       </div>
