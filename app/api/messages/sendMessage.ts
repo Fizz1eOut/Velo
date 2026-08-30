@@ -4,7 +4,8 @@ import type { MessageInsert } from '~/interface/message.interface';
 
 export const sendMessage = async (
   chatId: string,
-  content: string
+  content: string,
+  replyToId?: string | null
 ): Promise<{ error: unknown }> => {
   const supabase = useSupabaseClient<Database>();
 
@@ -16,6 +17,7 @@ export const sendMessage = async (
     sender_id: user.id,
     content,
     type: 'text',
+    reply_to_id: replyToId ?? null,
   };
 
   const { error } = await supabase
