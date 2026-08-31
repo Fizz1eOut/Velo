@@ -1,6 +1,6 @@
 import { useSupabaseClient } from '#imports';
 import type { Database } from '~/../types/database';
-import type { Message } from '~/interface/message.interface';
+import type { Message, ReplyPreview } from '~/interface/message.interface';
 import { groupReactions } from '~/utils/reactions';
 
 export const listMessages = async (
@@ -21,30 +21,53 @@ export const listMessages = async (
     file_name,
     file_size,
     file_mime,
+    thumbnail_url,
     reply_to_id,
+    forwarded_from,
     is_edited,
     is_deleted,
+    is_pinned,
     created_at,
     updated_at,
     message_reads!left(user_id),
-    reactions(emoji, user_id),
-    reply_to:messages!reply_to_id(id, content, sender_id, type, is_deleted)
+    reactions(emoji, user_id)
   `)
     .eq('chat_id', chatId)
     .order('created_at', { ascending: true });
 
-  const messages = data?.map((msg) => {
-    const rawReply = Array.isArray(msg.reply_to)
-      ? (msg.reply_to[0] ?? null)
-      : (msg.reply_to ?? null);
+  if (error || !data) {
+    return { data: null, error };
+  }
 
-    return {
-      ...msg,
-      reply_to: rawReply,
-      is_read: msg.message_reads.some((r) => r.user_id !== msg.sender_id),
-      reactions: groupReactions(msg.reactions ?? [], currentUserId),
-    };
-  }) ?? null;
+  const replyIds = Array.from(
+    new Set(data.map((m) => m.reply_to_id).filter((id): id is string => !!id))
+  );
 
-  return { data: messages as Message[] | null, error };
+  const replyMap = new Map<string, ReplyPreview>();
+
+  if (replyIds.length > 0) {
+    const { data: parents } = await supabase
+      .from('messages')
+      .select('id, content, sender_id, type, is_deleted')
+      .in('id', replyIds);
+
+    parents?.forEach((p) => {
+    replyMap.set(p.id, {
+      id: p.id,
+      content: p.content,
+      sender_id: p.sender_id,
+      type: p.type as ReplyPreview['type'],
+      is_deleted: p.is_deleted ?? false,
+    });
+    });
+  }
+
+  const messages = data.map((msg) => ({
+    ...msg,
+    reply_to: msg.reply_to_id ? (replyMap.get(msg.reply_to_id) ?? null) : null,
+    is_read: msg.message_reads.some((r) => r.user_id !== msg.sender_id),
+    reactions: groupReactions(msg.reactions ?? [], currentUserId),
+  }));
+
+  return { data: messages as Message[], error: null };
 };
