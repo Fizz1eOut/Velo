@@ -3,6 +3,7 @@
   import AppDropdown from '~/components/base/AppDropdown.vue';
   import AppButton from '~/components/base/AppButton.vue';
   import AppIcon from '~/components/base/AppIcon.vue';
+  import ChatMessageCopyButton from '~/components/content/Chat/ChatMessageCopyButton.vue';
   import { chatReplyKey } from '~/composables/useChatReply';
   import { toggleReaction } from '~/api/messages/toggleReaction';
   import { applyLocalReactionToggle } from '~/utils/reactions';
@@ -98,14 +99,9 @@
           Reply
         </app-button>
 
-        <app-button class="message-menu__button">
-          <app-icon 
-            name="copy"
-            color="var(--text-secondary)"
-            size="var(--fs-xl)"
-          />
-          Copy text
-        </app-button>
+        <chat-message-copy-button
+          :text="message.content"
+        />
 
         <app-button class="message-menu__button delete-button">
           <app-icon 
