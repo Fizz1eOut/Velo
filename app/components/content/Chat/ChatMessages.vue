@@ -68,6 +68,27 @@
     }
   };
 
+  const markMessageDeletedLocally = (messageId: string) => {
+    const message = messages.value.find((m) => m.id === messageId);
+    if (message) {
+      message.is_deleted = true;
+      message.content = null;
+    }
+
+    messages.value.forEach((m) => {
+      if (m.reply_to?.id === messageId) {
+        m.reply_to.is_deleted = true;
+        m.reply_to.content = null;
+      }
+    });
+
+    search.setMessages(messages.value);
+  };
+
+  const onMessageDeleted = (messageId: string) => {
+    markMessageDeletedLocally(messageId);
+  };
+
   const loadMessages = async (chatId: string) => {
     isLoading.value = true;
     await markMessagesAsRead(chatId);
@@ -121,6 +142,14 @@
           const deletedId = payload.old.id as string;
           messages.value = messages.value.filter((m) => m.id !== deletedId);
           search.setMessages(messages.value);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'messages', filter: `chat_id=eq.${chatId}` },
+        (payload) => {
+          const updated = payload.new as Message;
+          markMessageDeletedLocally(updated.id);
         }
       )
       .on(
@@ -267,6 +296,7 @@
         :highlight-query="search.query.value"
         @media-loaded="handleMediaLoaded"
         @scroll-to-reply="scrollToMessage"
+        @delete="onMessageDeleted"
       />
     </template>
 

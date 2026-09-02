@@ -1,9 +1,10 @@
 <script setup lang="ts">
-  import { ref, reactive, watch, nextTick, inject } from 'vue';
+  import { ref, reactive, computed, watch, nextTick, inject } from 'vue';
   import AppDropdown from '~/components/base/AppDropdown.vue';
   import AppButton from '~/components/base/AppButton.vue';
   import AppIcon from '~/components/base/AppIcon.vue';
   import ChatMessageCopyButton from '~/components/content/Chat/ChatMessageCopyButton.vue';
+  import ChatMessageDeleteButton from '~/components/content/Chat/ChatMessageDeleteButton.vue';
   import { chatReplyKey } from '~/composables/useChatReply';
   import { toggleReaction } from '~/api/messages/toggleReaction';
   import { applyLocalReactionToggle } from '~/utils/reactions';
@@ -20,6 +21,7 @@
 
   const emit = defineEmits<{
     (e: 'close'): void;
+    (e: 'delete', messageId: string): void;
   }>();
 
   const QUICK_REACTIONS = ['👍', '❤️', '😂', '🔥', '😮', '😢'];
@@ -28,6 +30,13 @@
     applyLocalReactionToggle(props.message, emoji, props.currentUserId);
     emit('close');
     await toggleReaction(props.message.id, emoji);
+  };
+
+  const isOwn = computed(() => props.currentUserId === props.message.sender_id);
+
+  const onDeleted = (messageId: string) => {
+    emit('delete', messageId);
+    emit('close');
   };
 
   const PADDING = 8;
@@ -103,14 +112,11 @@
           :text="message.content"
         />
 
-        <app-button class="message-menu__button delete-button">
-          <app-icon 
-            name="delete"
-            color="var(--text-secondary)"
-            size="var(--fs-xl)"
-          />
-          Delete
-        </app-button>
+        <chat-message-delete-button
+          v-if="isOwn"
+          :message-id="message.id"
+          @deleted="onDeleted"
+        />
       </app-dropdown>
     </div>
   </Teleport>

@@ -18,9 +18,9 @@
 
   const emit = defineEmits<{
     (e: 'media-loaded'): void;
-    (e: 'scroll-to-reply', id: string): void;
+    (e: 'scroll-to-reply' | 'delete', id: string): void;
   }>();
-
+  
   const onReplyPreviewClick = () => {
     if (props.message.reply_to?.id) emit('scroll-to-reply', props.message.reply_to.id);
   };
@@ -133,6 +133,7 @@
       :message="message"
       :current-user-id="currentUserId"
       @close="closeMenu"
+      @delete="emit('delete', $event)"
     />
   </div>
 </template>
@@ -202,9 +203,16 @@
     left: 20px;
     z-index: 1;
   }
-  .chat-message__reaction.is-mine {
-    background-color: transparent;
+  .chat-message__reaction {
+    padding: 1px;
+    border: none;
+    background-color: var(--bg-surface-2);
+    box-shadow: var(--shadow-md);
     font-size: var(--fs-xl);
+    border-radius: var(--radius-sm);
+  }
+  .chat-message__reaction.is-mine {
+    background-color: var(--primary);
   }
   @media (max-width: 768px) {
     .chat-message__content {
