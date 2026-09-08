@@ -9,6 +9,9 @@
   import AppAvatar from '~/components/base/AppAvatar.vue';
   import AppTypingIndicator from '~/components/base/AppTypingIndicator.vue';
   import ChatHeaderActions from '~/components/content/Chat/ChatHeaderActions.vue';
+  import AppSidebar from '~/components/base/AppSidebar.vue';
+  import ChatProfilePanel from '~/components/content/Chat/ChatProfilePanel.vue';
+  import { useClickOutside } from '~/composables/useClickOutside';
 
   interface ChatHeaderProps {
     chatId: string;
@@ -17,6 +20,17 @@
   const props = defineProps<ChatHeaderProps>();
   const profile = ref<ChatListItem['profile'] | null>(null);
   const typing = inject(chatTypingKey, shallowRef(null));
+  const isActive = ref(false);
+
+  const rootEl = ref<HTMLElement | null>(null);
+  useClickOutside(rootEl, () =>closeSidebar());
+
+  const openSidebar = () => {
+    isActive.value = true;
+  };
+  const closeSidebar = () => {
+    isActive.value = false;
+  };
 
   watch(
     () => props.chatId,
@@ -30,11 +44,11 @@
 </script>
 
 <template>
-  <div class="chat-header">
+  <div ref="rootEl" class="chat-header">
     <app-underlay>
       <app-container>
         <div class="chat-header__body">
-          <div v-if="profile" class="chat-header__summary">
+          <div v-if="profile" class="chat-header__summary" @click="openSidebar">
             <app-avatar 
               :src="profile?.avatar_url" 
               :alt="profile?.username"
@@ -60,6 +74,9 @@
 
           <chat-header-actions :chat-id="chatId" :user-id="userId" />
         </div>
+        <app-sidebar :active="isActive"  @close="closeSidebar">
+          <chat-profile-panel :profile="profile" :chat-id="chatId" :user-id="userId" />
+        </app-sidebar>
       </app-container>
     </app-underlay>
   </div>
@@ -93,5 +110,9 @@
   }
   .online {
     color: var(--online);
+  }
+  :deep(.sidebar) {
+    left: unset;
+    right: 0;
   }
 </style>
