@@ -129,6 +129,7 @@
 <style scoped>
   .chat-attachment__image {
     max-width: 400px;
+    width: 100%;
     min-height: 120px;
     background: var(--bg-surface-2);
     border-radius: var(--radius-sm, 8px);

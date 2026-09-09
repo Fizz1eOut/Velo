@@ -15,6 +15,10 @@
     userId: string;
   }
   const props = defineProps<ChatWindow>();
+  
+  const emit = defineEmits<{
+    (e: 'back'): void;
+  }>();
 
   const supabase = useSupabaseClient<Database>();
   const currentUser = useSupabaseUser();
@@ -99,7 +103,7 @@
     <div v-else-if="error">{{ error }}</div>
 
     <div v-else-if="chatId" class="chat-window__content">
-      <chat-header :chat-id="chatId" :user-id="userId" />
+      <chat-header :chat-id="chatId" :user-id="userId" @back="emit('back')" />
       <chat-messages :chat-id="chatId" />
       <chat-input :chat-id="chatId" />
     </div>
