@@ -9,6 +9,7 @@
   import AppUnderlay from '~/components/base/AppUnderlay.vue';
   import AppDivider from '~/components/base/AppDivider.vue';
   import AppSidebar from '~/components/base/AppSidebar.vue';
+  import UserProfilePanel from '~/components/content/Profile/UserProfilePanel.vue';
 
   definePageMeta({
     middleware: ['auth']
@@ -39,7 +40,7 @@
           <app-divider />
           <conversations-sidebar @select-chat="userId = $event" />
           <app-divider />
-          <app-search ref="searchRef" @user-id="userId = $event" />
+          <user-profile-panel :user-id="userId" />
           <app-sidebar />
         </app-container>
       </app-underlay> 
