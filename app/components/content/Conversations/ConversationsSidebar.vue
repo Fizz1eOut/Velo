@@ -92,5 +92,26 @@
 <style scoped>
   .conversation-sidebar {
     margin-top: var(--space-lg);
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+  }
+
+  .conversation-sidebar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .conversation-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .conversation-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: var(--radius-sm);
+  }
+  .conversation-sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.45);
   }
 </style>

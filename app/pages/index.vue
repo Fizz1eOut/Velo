@@ -33,12 +33,13 @@
 <template>
   <div class="chat-layout" :class="{ 'chat-layout--chat-open': isChatOpen }">
     <div class="chat-sidebar">
-      <app-underlay>
-        <app-container>
+      <app-underlay class="chat-sidebar__underlay">
+        <app-container class="chat-sidebar__container">
           <app-search ref="searchRef" @user-id="userId = $event" />
           <app-divider />
           <conversations-sidebar @select-chat="userId = $event" />
-
+          <app-divider />
+          <app-search ref="searchRef" @user-id="userId = $event" />
           <app-sidebar />
         </app-container>
       </app-underlay> 
@@ -58,8 +59,22 @@
     align-items: flex-start;
     gap: 10px;
   }
+  .chat-sidebar__underlay {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+  }
+  .chat-sidebar__container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+  }
   .chat-sidebar {
     flex: 0 1 350px;
+    height: 100vh;
+    height: 100dvh;
   }
   .chat-content {
     flex: 0 1 100%;
