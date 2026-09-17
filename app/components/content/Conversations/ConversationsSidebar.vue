@@ -7,6 +7,7 @@
   import type { ChatListItem } from '~/interface/chat.interface';
   import type { lastMessagePreview } from '~/api/messages/lastMessages';
   import ConversationsList from '~/components/content/Conversations/ConversationsList.vue';
+  import AppLoadingSpinner from '~/components/base/AppLoadingSpinner.vue';
 
   const emit = defineEmits<{
     selectChat: [userId: string]
@@ -15,6 +16,7 @@
   const supabase = useSupabaseClient<Database>();
   const chats = ref<ChatListItem[]>([]);
   const lastMessages = ref<lastMessagePreview[]>([]);
+  const loading = ref(true);
 
   const subscribeToLastMessages = () => {
     return supabase
@@ -61,17 +63,21 @@
   };
 
   onMounted(async () => {
-    const { data } = await listChats();
-    chats.value = data ?? [];
+    try {
+      const { data } = await listChats();
+      chats.value = data ?? [];
 
-    if (chats.value.length) {
-      const chatIds = chats.value.map(c => c.chat.id);
-      const { data: messages } = await getLastMessages(chatIds);
-      lastMessages.value = messages ?? [];
+      if (chats.value.length) {
+        const chatIds = chats.value.map(c => c.chat.id);
+        const { data: messages } = await getLastMessages(chatIds);
+        lastMessages.value = messages ?? [];
+      }
+
+      subscribeToLastMessages();
+      subscribeToStatus();
+    } finally {
+      loading.value = false;
     }
-
-    subscribeToLastMessages();
-    subscribeToStatus();
   });
 
   onUnmounted(() => {
@@ -85,7 +91,13 @@
 
 <template>
   <div class="conversation-sidebar">
-    <conversations-list :chats="chats" :get-last-message="getLastMessage" @select-chat="emit('selectChat', $event)" />
+    <app-loading-spinner v-if="loading" />
+    <conversations-list
+      v-else 
+      :chats="chats" 
+      :get-last-message="getLastMessage"
+      @select-chat="emit('selectChat', $event)" 
+    />
   </div>
 </template>
 
