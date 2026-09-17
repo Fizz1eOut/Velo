@@ -3,6 +3,7 @@
   import { getProfile } from '~/api/users/getProfile';
   import type { Profile } from '~/interface/profile.interface';
   import AppAvatar from '~/components/base/AppAvatar.vue';
+  import AppLoadingSpinner from '~/components/base/AppLoadingSpinner.vue';
 
   interface ProfileIdentityProps {
     userId: string;
@@ -29,7 +30,8 @@
 </script>
 
 <template>
-  <div class="profile-identity">
+  <app-loading-spinner v-if="loading" size="sm" />
+  <div else class="profile-identity">
     <app-avatar 
       v-if="profile"
       :src="profile?.avatar_url" 
