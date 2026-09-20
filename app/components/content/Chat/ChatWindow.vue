@@ -1,0 +1,127 @@
+<script setup lang="ts">
+  import { ref, watch, provide, onUnmounted, shallowRef } from 'vue';
+  import { useSupabaseClient, useSupabaseUser } from '#imports';
+  import type { Database } from '~/../types/database';
+  import { fetchChatById } from '~/api/chats/chatById';
+  import { chatSearchKey, createChatSearch } from '~/composables/useChatSearch';
+  import { chatTypingKey, createChatTyping, type ChatTyping } from '~/composables/useChatTyping';
+  import { chatReplyKey, createChatReply } from '~/composables/useChatReply';
+  import AppLoadingSpinner from '~/components/base/AppLoadingSpinner.vue';
+  import ChatMessages from '~/components/content/Chat/ChatMessages.vue';
+  import ChatInput from '~/components/content/Chat/ChatInput.vue';
+  import ChatHeader from '~/components/content/Chat/ChatHeader.vue';
+
+  interface ChatWindow {
+    userId: string;
+  }
+  const props = defineProps<ChatWindow>();
+  
+  const emit = defineEmits<{
+    (e: 'back'): void;
+  }>();
+
+  const supabase = useSupabaseClient<Database>();
+  const currentUser = useSupabaseUser();
+
+  const chatId = ref<string | null>(null);
+  const isLoading = ref(false);
+  const error = ref<string | null>(null);
+
+  const search = createChatSearch();
+  provide(chatSearchKey, search);
+
+  const typing = shallowRef<ChatTyping | null>(null);
+  provide(chatTypingKey, typing);
+
+  const reply = createChatReply();
+  provide(chatReplyKey, reply);
+  watch(chatId, () => {
+    reply.clearReply();
+  });
+
+  watch(
+    () => props.userId,
+    async (id) => {
+      if (!id) return;
+
+      isLoading.value = true;
+      error.value = null;
+
+      const { chatId: id_, error: err } = await fetchChatById(id);
+
+      if (err) {
+        error.value = 'Failed to load chat';
+      } else {
+        chatId.value = id_;
+      }
+
+      isLoading.value = false;
+    },
+    { immediate: true }
+  );
+
+  watch(
+    [chatId, currentUser],
+    ([id, user]) => {
+      typing.value?.destroy();
+      typing.value = null;
+      if (!id || !user) return;
+      typing.value = createChatTyping(id, user.sub);
+    },
+    { immediate: true }
+  );
+
+  let unsubscribeChatDeletion: (() => void) | null = null;
+
+  watch(chatId, (id) => {
+    unsubscribeChatDeletion?.();
+    unsubscribeChatDeletion = null;
+
+    if (!id) return;
+
+    const channel = supabase
+      .channel(`chat-deleted:${id}`)
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'chats', filter: `id=eq.${id}` },
+        () => { chatId.value = null; }
+      )
+      .subscribe();
+
+    unsubscribeChatDeletion = () => supabase.removeChannel(channel);
+  });
+
+  onUnmounted(() => {
+    unsubscribeChatDeletion?.();
+    typing.value?.destroy();
+  });
+</script>
+
+<template>
+  <div class="chat-window">
+    <app-loading-spinner v-if="isLoading" />
+    <div v-else-if="error">{{ error }}</div>
+
+    <div v-else-if="chatId" class="chat-window__content">
+      <chat-header :chat-id="chatId" :user-id="userId" @back="emit('back')" />
+      <chat-messages :chat-id="chatId" />
+      <chat-input :chat-id="chatId" />
+    </div>
+  </div>
+</template>
+
+<style scoped> 
+  .chat-window {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .chat-window__content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+</style>
