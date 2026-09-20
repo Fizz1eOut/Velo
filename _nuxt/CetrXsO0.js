@@ -1,0 +1,1 @@
+import{d as a,z as n,A as r,J as p,O as c,m as i}from"./D-NdKdC_.js";import{_ as d}from"./DlAUqK2U.js";const l=a({__name:"AppContainer",props:{size:{default:"xs"}},setup(e){const s=e,o=i(()=>`size-${s.size}`);return(t,m)=>(n(),r("div",{class:p([o.value,"container"])},[c(t.$slots,"default",{},void 0,!0)],2))}}),f=d(l,[["__scopeId","data-v-d703de84"]]);export{f as A};
