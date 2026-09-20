@@ -8,6 +8,7 @@
   import AppDivider from '~/components/base/AppDivider.vue';
   import AppSidebar from '~/components/base/AppSidebar.vue';
   import ProfileSettingsHeader from '~/components/content/Profile/ProfileSettingsHeader.vue';
+  import ProfileSettingsInfo from '~/components/content/Profile/ProfileSettingsInfo.vue';
 
   interface ProfileSettingsPanelProps {
     userId: string;
@@ -42,6 +43,10 @@
       profile.value.avatar_url = avatarUrl;
     }
   };
+
+  const onProfileUpdated = (updated: Profile) => {
+    profile.value = updated;
+  };
   
   onMounted(() => {
     fetchProfile();
@@ -62,6 +67,8 @@
       <div v-else class="settings-panel__content">
         <app-divider />
         <profile-settings-header :profile="profile" @avatar-updated="onAvatarUpdated" />
+        <app-divider />
+        <profile-settings-info :profile="profile" @profile-updated="onProfileUpdated" />
         <app-divider />
       </div>
     </app-sidebar>
