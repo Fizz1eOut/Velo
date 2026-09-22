@@ -113,6 +113,7 @@
     align-items: center;
     gap: 10px;
     cursor: pointer;
+    width: 100%;
   }
   .chat-header__row {
     display: flex;
