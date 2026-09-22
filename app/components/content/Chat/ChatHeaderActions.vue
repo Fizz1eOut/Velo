@@ -16,7 +16,7 @@
       <chat-search class="chat-search" />
     </div>
 
-    <div class="chat-header__item">
+    <div class="chat-header__item item">
       <div class="chat-header__row">
         <app-icon 
           name="call" 
@@ -26,7 +26,7 @@
       </div>
     </div>
 
-    <div class="chat-header__item">
+    <div class="chat-header__item item">
       <div class="chat-header__row">
         <app-icon 
           name="video-camera" 
@@ -81,6 +81,11 @@
       padding: 10px;
       border-radius: var(--radius-sm);
       border: 1px solid var(--border);
+    }
+  }
+  @media (max-width: 480px) {
+    .item {
+      display: none;
     }
   }
 </style>
