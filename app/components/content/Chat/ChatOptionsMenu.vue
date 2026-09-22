@@ -82,19 +82,6 @@
     <app-dropdown :active="isOpen" class="options-menu__dropdown" @close="closeMenu">
       <ul class="options-menu__list">
         <li class="options-menu__item">
-          <app-button class="options-menu__button">
-            <app-icon 
-              name="user"
-              size="var(--fs-xl)"
-              color="var(--text-secondary)"
-            />
-            View profile
-          </app-button>
-        </li>
-
-        <app-divider />
-
-        <li class="options-menu__item">
           <app-button class="options-menu__button button-red" @click="onBlock">
             <app-icon 
               name="block"
