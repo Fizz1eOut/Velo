@@ -60,38 +60,47 @@
 </template>
 
 <style scoped>
+.login-page {
+  height: 100dvh;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  background-color: #fff;
+}
+.login-page__item {
+  flex: 0 1 50%;
+  height: 100%;
+}
+.login-page__form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  height: 100%;
+}
+:deep(.container) {
+  width: 100%;
+  max-width: 400px;
+}
+
+@media (max-width: 768px) {
   .login-page {
-    height: 100vh;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 10px;
-    background-color: #fff;
-  } 
-  .login-page__item {
-    flex: 0 1 50%;
-    height: 100%;
-  }
-  .login-page__form {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    height: 100%;
-  }
-  :deep(.container) {
+    flex-direction: column;
     width: 100%;
-    max-width: 400px;
+    height: 100dvh;
   }
-  @media (max-width: 768px) {
-    .login-page {
-      flex-direction: column;
-      width: 100%;
-      height: 100%;
-    }
-    .login-page__item {
-      flex: none;
-      width: 100%;
-    }
+  .login-page__item {
+    flex: none;
+    width: 100%;
+    height: auto;
   }
+  .login-page__item:first-child {
+    flex: 0 0 auto;
+  }
+  .login-page__item:last-child {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}
 </style>
